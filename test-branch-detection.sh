@@ -28,7 +28,7 @@ simulate_github_actions() {
   BEST_BRANCH="main"
   BEST_DISTANCE=99999
   
-  for REMOTE_BRANCH in $(git branch -r --contains "$TAG_COMMIT" | grep -v HEAD | sed -e 's/^[[:space:]]*//' -e 's/^origin\///')
+  for REMOTE_BRANCH in $(git for-each-ref --format='%(refname:short)' --contains="$TAG_COMMIT" refs/remotes/origin/ | sed 's|^origin/||')
   do
     # Get the base of the branch (where it diverged from main)
     BRANCH_BASE=$(git merge-base origin/main origin/$REMOTE_BRANCH 2>/dev/null || echo "")
@@ -52,7 +52,7 @@ simulate_github_actions() {
   
   # Fallback to old logic if our algorithm doesn't find anything
   if [ $BEST_DISTANCE -eq 99999 ]; then
-    BEST_BRANCH=$(git branch -r --contains "$TAG_COMMIT" | grep -v HEAD | sed -e 's/^[[:space:]]*//' -e 's/^origin\///' | head -n 1 || echo "main")
+    BEST_BRANCH=$(git for-each-ref --format='%(refname:short)' --contains="$TAG_COMMIT" refs/remotes/origin/ | sed 's|^origin/||' | head -n 1 || echo "main")
     echo "Using fallback detection method"
   fi
   
